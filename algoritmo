@@ -1,0 +1,213 @@
+#ifndef BIBLIOTECA_H
+#define BIBLIOTECA_H
+
+#define MAX_LIVROS 100
+#define MAX_USUARIOS 50
+
+typedef struct {
+    int id;
+    char titulo[100];
+    char autor[100];
+    int disponivel;
+} Livro;
+
+typedef struct {
+    int id;
+    char nome[100];
+    int livroEmprestado;
+} Usuario;
+
+void inicializarBiblioteca();
+void salvarDados();
+void carregarDados();
+
+void adicionarLivro();
+void removerLivro();
+void buscarLivro();
+void listarLivrosDisponiveis();
+void listarLivrosEmprestados();
+
+void registrarEmprestimo();
+void registrarDevolucao();
+
+#endif
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+
+Livro livros[MAX_LIVROS];
+Usuario usuarios[MAX_USUARIOS];
+int totalLivros = 0;
+int totalUsuarios = 0;
+
+void inicializarBiblioteca() {
+    carregarDados();
+}
+
+void salvarDados() {
+    FILE *file = fopen("biblioteca.dat", "wb");
+    if (!file) return;
+    fwrite(&totalLivros, sizeof(int), 1, file);
+    fwrite(livros, sizeof(Livro), totalLivros, file);
+    fwrite(&totalUsuarios, sizeof(int), 1, file);
+    fwrite(usuarios, sizeof(Usuario), totalUsuarios, file);
+    fclose(file);
+}
+
+void carregarDados() {
+    FILE *file = fopen("biblioteca.dat", "rb");
+    if (!file) return;
+    fread(&totalLivros, sizeof(int), 1, file);
+    fread(livros, sizeof(Livro), totalLivros, file);
+    fread(&totalUsuarios, sizeof(int), 1, file);
+    fread(usuarios, sizeof(Usuario), totalUsuarios, file);
+    fclose(file);
+}
+
+void adicionarLivro() {
+    if (totalLivros >= MAX_LIVROS) {
+        printf("Biblioteca cheia!\n");
+        return;
+    }
+    Livro novo;
+    novo.id = totalLivros + 1;
+    printf("Título: ");
+    getchar();
+    fgets(novo.titulo, 100, stdin);
+    printf("Autor: ");
+    fgets(novo.autor, 100, stdin);
+    novo.disponivel = 1;
+    livros[totalLivros++] = novo;
+    salvarDados();
+    printf("Livro adicionado!\n");
+}
+
+void removerLivro() {
+    int id;
+    printf("ID do livro: ");
+    scanf("%d", &id);
+    for (int i = 0; i < totalLivros; i++) {
+        if (livros[i].id == id) {
+            livros[i] = livros[totalLivros - 1];
+            totalLivros--;
+            salvarDados();
+            printf("Livro removido!\n");
+            return;
+        }
+    }
+    printf("Livro não encontrado!\n");
+}
+
+void buscarLivro() {
+    char titulo[100];
+    printf("Título do livro: ");
+    getchar();
+    fgets(titulo, 100, stdin);
+    for (int i = 0; i < totalLivros; i++) {
+        if (strstr(livros[i].titulo, titulo)) {
+            printf("ID: %d, Título: %s, Autor: %s, Disponível: %s\n",
+                   livros[i].id, livros[i].titulo, livros[i].autor,
+                   livros[i].disponivel ? "Sim" : "Não");
+        }
+    }
+}
+
+void listarLivrosDisponiveis() {
+    for (int i = 0; i < totalLivros; i++) {
+        if (livros[i].disponivel) {
+            printf("ID: %d, Título: %s, Autor: %s\n",
+                   livros[i].id, livros[i].titulo, livros[i].autor);
+        }
+    }
+}
+
+void listarLivrosEmprestados() {
+    for (int i = 0; i < totalLivros; i++) {
+        if (!livros[i].disponivel) {
+            printf("ID: %d, Título: %s, Autor: %s\n",
+                   livros[i].id, livros[i].titulo, livros[i].autor);
+        }
+    }
+}
+
+void registrarEmprestimo() {
+    int livroID, userID;
+    printf("ID do livro: ");
+    scanf("%d", &livroID);
+    printf("ID do usuário: ");
+    scanf("%d", &userID);
+    
+    if (livroID <= 0 || livroID > totalLivros || !livros[livroID - 1].disponivel) {
+        printf("Livro não disponível!\n");
+        return;
+    }
+
+    usuarios[totalUsuarios].id = userID;
+    printf("Nome do usuário: ");
+    getchar();
+    fgets(usuarios[totalUsuarios].nome, 100, stdin);
+    usuarios[totalUsuarios].livroEmprestado = livroID;
+    totalUsuarios++;
+    
+    livros[livroID - 1].disponivel = 0;
+    salvarDados();
+    printf("Empréstimo registrado!\n");
+}
+
+void registrarDevolucao() {
+    int livroID;
+    printf("ID do livro: ");
+    scanf("%d", &livroID);
+    
+    if (livroID <= 0 || livroID > totalLivros || livros[livroID - 1].disponivel) {
+        printf("Livro não emprestado!\n");
+        return;
+    }
+
+    for (int i = 0; i < totalUsuarios; i++) {
+        if (usuarios[i].livroEmprestado == livroID) {
+            usuarios[i] = usuarios[totalUsuarios - 1];
+            totalUsuarios--;
+            break;
+        }
+    }
+    
+    livros[livroID - 1].disponivel = 1;
+    salvarDados();
+    printf("Devolução registrada!\n");
+}
+
+#include <stdio.h>
+
+
+void menu() {
+    printf("\n1. Adicionar Livro\n2. Remover Livro\n3. Buscar Livro\n");
+    printf("4. Listar Livros Disponíveis\n5. Listar Livros Emprestados\n");
+    printf("6. Registrar Empréstimo\n7. Registrar Devolução\n0. Sair\n");
+}
+
+int main() {
+    int opcao;
+    inicializarBiblioteca();
+
+    do {
+        menu();
+        printf("Escolha: ");
+        scanf("%d", &opcao);
+        switch (opcao) {
+            case 1: adicionarLivro(); break;
+            case 2: removerLivro(); break;
+            case 3: buscarLivro(); break;
+            case 4: listarLivrosDisponiveis(); break;
+            case 5: listarLivrosEmprestados(); break;
+            case 6: registrarEmprestimo(); break;
+            case 7: registrarDevolucao(); break;
+            case 0: printf("Saindo...\n"); break;
+            default: printf("Opção inválida!\n");
+        }
+    } while (opcao != 0);
+
+    return 0;
+}
