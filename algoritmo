@@ -3,6 +3,7 @@
 
 #define MAX_LIVROS 100
 #define MAX_USUARIOS 50
+#include <locale.h>
 
 typedef struct {
     int id;
@@ -48,7 +49,10 @@ void inicializarBiblioteca() {
 
 void salvarDados() {
     FILE *file = fopen("biblioteca.dat", "wb");
-    if (!file) return;
+    if (!file){
+	printf("Erro ao salvar dados.\n");	
+	 return;
+	 }
     fwrite(&totalLivros, sizeof(int), 1, file);
     fwrite(livros, sizeof(Livro), totalLivros, file);
     fwrite(&totalUsuarios, sizeof(int), 1, file);
@@ -88,7 +92,8 @@ void removerLivro() {
     int id;
     printf("ID do livro: ");
     scanf("%d", &id);
-    for (int i = 0; i < totalLivros; i++) {
+    int i;
+    for (i = 0; i < totalLivros; i++) {
         if (livros[i].id == id) {
             livros[i] = livros[totalLivros - 1];
             totalLivros--;
@@ -105,7 +110,8 @@ void buscarLivro() {
     printf("Título do livro: ");
     getchar();
     fgets(titulo, 100, stdin);
-    for (int i = 0; i < totalLivros; i++) {
+    int i; 
+    for (i = 0; i < totalLivros; i++) {
         if (strstr(livros[i].titulo, titulo)) {
             printf("ID: %d, Título: %s, Autor: %s, Disponível: %s\n",
                    livros[i].id, livros[i].titulo, livros[i].autor,
@@ -115,7 +121,8 @@ void buscarLivro() {
 }
 
 void listarLivrosDisponiveis() {
-    for (int i = 0; i < totalLivros; i++) {
+    int i; 
+    for (i = 0; i < totalLivros; i++) {
         if (livros[i].disponivel) {
             printf("ID: %d, Título: %s, Autor: %s\n",
                    livros[i].id, livros[i].titulo, livros[i].autor);
@@ -124,7 +131,8 @@ void listarLivrosDisponiveis() {
 }
 
 void listarLivrosEmprestados() {
-    for (int i = 0; i < totalLivros; i++) {
+    int i; 
+    for (i = 0; i < totalLivros; i++) {
         if (!livros[i].disponivel) {
             printf("ID: %d, Título: %s, Autor: %s\n",
                    livros[i].id, livros[i].titulo, livros[i].autor);
@@ -166,7 +174,8 @@ void registrarDevolucao() {
         return;
     }
 
-    for (int i = 0; i < totalUsuarios; i++) {
+    int i; 
+    for (i = 0; i < totalUsuarios; i++) {
         if (usuarios[i].livroEmprestado == livroID) {
             usuarios[i] = usuarios[totalUsuarios - 1];
             totalUsuarios--;
@@ -180,17 +189,42 @@ void registrarDevolucao() {
 }
 
 #include <stdio.h>
+#include <windows.h>
 
+void printCentralizado(const char *texto){
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	int LarguraTerminal;
+	
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+	LarguraTerminal = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+	int ComprimentoTexto=strlen(texto);
+	int espacos=(LarguraTerminal-ComprimentoTexto)/2;
+	int i;
+	for(i=0;i<espacos;i++) printf(" ");
+	printf("%s\n",texto);
+
+}
 
 void menu() {
-    printf("\n1. Adicionar Livro\n2. Remover Livro\n3. Buscar Livro\n");
-    printf("4. Listar Livros Disponíveis\n5. Listar Livros Emprestados\n");
-    printf("6. Registrar Empréstimo\n7. Registrar Devolução\n0. Sair\n");
+	system("cls");
+	printCentralizado("|                     BIBLIOTECA                         |\n");
+    printCentralizado("|========================================================|\n");
+    printCentralizado("|         1.Adicionar Livros  2.Remover Livros           |\n");
+    printCentralizado("|--------------------------------------------------------|\n");
+    printCentralizado("|       3.Buscar Livros    4.Listar Livros Disponiveis   |\n");
+    printCentralizado("|--------------------------------------------------------|\n");
+    printCentralizado("|    5.Lista Livros Emprestados  6.Registrar Empréstimo  |\n");
+    printCentralizado("|--------------------------------------------------------|\n");
+    printCentralizado("|                7.Registrar Devolução                   |\n");
+    printCentralizado("|--------------------------------------------------------|\n");
+    printCentralizado("|                       0.Sair                           |\n");
 }
 
 int main() {
+	setlocale(LC_ALL,"Portuguese");
     int opcao;
     inicializarBiblioteca();
+    
 
     do {
         menu();
