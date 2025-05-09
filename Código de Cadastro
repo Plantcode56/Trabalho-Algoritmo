@@ -1,1 +1,94 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <locale.h>
+#include <string.h>
 
+typedef struct {
+	int id;
+	char nome[100];
+	char autor[50];
+	int disponivel;
+}Livro;
+
+typedef struct {
+	char nome[100];
+	char CPF[12];
+	int livroEmprestado;
+	int senha;
+}Usuario;
+
+int escolha;
+
+void CadastrarUsuario(){
+	Usuario novoUsuario;
+	 
+	getchar();
+	printf("Informe seu Nome:");
+	fgets(novoUsuario.nome, 100, stdin);
+	novoUsuario.nome[strcspn(novoUsuario.nome,"\n")] = '\0';
+	printf("Digite seu CPF:");
+	fgets(novoUsuario.CPF, 12, stdin);
+	novoUsuario.CPF[strcspn(novoUsuario.CPF,"\n")] = '\0';
+	
+	printf("Digite sua senha:");
+	scanf("%i",&novoUsuario.senha);
+	
+	novoUsuario.livroEmprestado=0;
+	
+	FILE *arquivo = fopen("C:\\Temp\\usuario.dat","ab");
+	fwrite(&novoUsuario,sizeof(Usuario),1,arquivo);
+	fclose(arquivo);
+	printf("Cadastro realizado com sucesso");
+}
+
+void TelaEscolha(){
+	printf("Ja possui um login? Se não, digite 0 para cadastro\n");
+	scanf("%d",&escolha);
+	getchar();
+	if(escolha==0){
+		CadastrarUsuario();
+	}else{
+		Login();
+	}
+}
+
+void Login(){
+	Usuario usuarioBuscado;
+	char CPF[12];
+	int senhainformada;
+	int encontrado=0;
+	
+	getchar();
+	printf("Digite seu CPF\n");
+	fgets(CPF,12,stdin);
+	printf("Digite sua senha:\n");
+	scanf("%d",&senhainformada);
+	
+	FILE *arquivo=fopen("C:\\Temp\\usuario.dat","rb");
+	
+	if(arquivo==NULL){
+		printf("Erro no acesso do arquivo");
+		return 0;
+	}
+		while(fread(&usuarioBuscado,sizeof(Usuario),1,arquivo)){
+		if(strcmp(usuarioBuscado.CPF,CPF)==0 && usuarioBuscado.senha==senhainformada){
+			printf("Login efetuado com sucesso! Bem vindo %s\n",usuarioBuscado.nome);
+			encontrado=1;
+			break;
+		}	
+		}
+		
+		if(!encontrado){
+			printf("Erro no login,CPF ou senha errados!\n");
+		}
+
+}
+
+
+
+
+int main(){
+	setlocale(LC_ALL,"Portuguese");
+	TelaEscolha();
+	
+}
