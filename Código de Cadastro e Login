@@ -12,7 +12,7 @@ typedef struct {
 
 typedef struct {
 	char nome[100];
-	char CPF[12];
+	char CPF[15];
 	int livroEmprestado;
 	int senha;
 }Usuario;
@@ -23,13 +23,15 @@ void CadastrarUsuario(){
 	Usuario novoUsuario;
 	 
 	getchar();
+	printf("----CADASTRO----\n\n");
 	printf("Informe seu Nome:");
 	fgets(novoUsuario.nome, 100, stdin);
 	novoUsuario.nome[strcspn(novoUsuario.nome,"\n")] = '\0';
+	printf("----CADASTRO----\n\n");
 	printf("Digite seu CPF:");
-	fgets(novoUsuario.CPF, 12, stdin);
+	fgets(novoUsuario.CPF, 15, stdin);
 	novoUsuario.CPF[strcspn(novoUsuario.CPF,"\n")] = '\0';
-	
+	printf("----CADASTRO----\n\n");
 	printf("Digite sua senha:");
 	scanf("%i",&novoUsuario.senha);
 	
@@ -38,13 +40,13 @@ void CadastrarUsuario(){
 	FILE *arquivo = fopen("C:\\Temp\\usuario.dat","ab");
 	fwrite(&novoUsuario,sizeof(Usuario),1,arquivo);
 	fclose(arquivo);
-	printf("Cadastro realizado com sucesso");
+	printf("Cadastro realizado com sucesso\n");
+	Login();
 }
 
 void TelaEscolha(){
 	printf("Ja possui um login? Se não, digite 0 para cadastro\n");
 	scanf("%d",&escolha);
-	getchar();
 	if(escolha==0){
 		CadastrarUsuario();
 	}else{
@@ -54,22 +56,29 @@ void TelaEscolha(){
 
 void Login(){
 	Usuario usuarioBuscado;
-	char CPF[12];
+	char CPF[15];
 	int senhainformada;
 	int encontrado=0;
 	
+	
+	while(!encontrado){
+	FILE *arquivo=fopen("C:\\Temp\\usuario.dat","rb");	
+	
+	if(arquivo==NULL){
+		printf("Erro no acesso do arquivo,Cadastro não efetuado.\n\n\n");
+		TelaEscolha(); 
+		return;
+}
+			
 	getchar();
+	printf("----LOGIN----\n\n");
 	printf("Digite seu CPF\n");
-	fgets(CPF,12,stdin);
+	fgets(CPF,15,stdin);
+	CPF[strcspn(CPF,"\n")]='\0';
 	printf("Digite sua senha:\n");
 	scanf("%d",&senhainformada);
 	
-	FILE *arquivo=fopen("C:\\Temp\\usuario.dat","rb");
 	
-	if(arquivo==NULL){
-		printf("Erro no acesso do arquivo");
-		return 0;
-	}
 		while(fread(&usuarioBuscado,sizeof(Usuario),1,arquivo)){
 		if(strcmp(usuarioBuscado.CPF,CPF)==0 && usuarioBuscado.senha==senhainformada){
 			printf("Login efetuado com sucesso! Bem vindo %s\n",usuarioBuscado.nome);
@@ -80,11 +89,12 @@ void Login(){
 		
 		if(!encontrado){
 			printf("Erro no login,CPF ou senha errados!\n");
+			TelaEscolha();
 		}
+fclose(arquivo);
 
 }
-
-
+}
 
 
 int main(){
