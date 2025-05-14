@@ -1,6 +1,6 @@
 #ifndef BIBLIOTECA_H
 #define BIBLIOTECA_H
-
+int i;
 #define MAX_LIVROS 100
 #define MAX_USUARIOS 50
 #include <locale.h>
@@ -92,7 +92,6 @@ void removerLivro() {
     int id;
     printf("ID do livro: ");
     scanf("%d", &id);
-    int i;
     for (i = 0; i < totalLivros; i++) {
         if (livros[i].id == id) {
             livros[i] = livros[totalLivros - 1];
@@ -110,7 +109,6 @@ void buscarLivro() {
     printf("Título do livro: ");
     getchar();
     fgets(titulo, 100, stdin);
-    int i; 
     for (i = 0; i < totalLivros; i++) {
         if (strstr(livros[i].titulo, titulo)) {
             printf("ID: %d, Título: %s, Autor: %s, Disponível: %s\n",
@@ -118,6 +116,7 @@ void buscarLivro() {
                    livros[i].disponivel ? "Sim" : "Não");
         }
     }
+    
 }
 
 void listarLivrosDisponiveis() {
@@ -199,14 +198,12 @@ void printCentralizado(const char *texto){
 	LarguraTerminal = csbi.srWindow.Right - csbi.srWindow.Left + 1;
 	int ComprimentoTexto=strlen(texto);
 	int espacos=(LarguraTerminal-ComprimentoTexto)/2;
-	int i;
 	for(i=0;i<espacos;i++) printf(" ");
 	printf("%s\n",texto);
 
 }
 
 void menu() {
-	system("cls");
 	printCentralizado("|                     BIBLIOTECA                         |\n");
     printCentralizado("|========================================================|\n");
     printCentralizado("|         1.Adicionar Livros  2.Remover Livros           |\n");
