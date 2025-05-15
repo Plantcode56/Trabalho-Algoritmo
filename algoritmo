@@ -86,10 +86,11 @@ void adicionarLivro() {
     livros[totalLivros++] = novo;
     salvarDados();
     printf("Livro adicionado!\n");
+    getchar();
 }
 
 void removerLivro() {
-    int id;
+    int id, removido;
     printf("ID do livro: ");
     scanf("%d", &id);
     for (i = 0; i < totalLivros; i++) {
@@ -98,10 +99,13 @@ void removerLivro() {
             totalLivros--;
             salvarDados();
             printf("Livro removido!\n");
-            return;
+            removido=0;
         }
     }
-    printf("Livro não encontrado!\n");
+    if(!removido){
+		printf("Nenhum livro disponivel para remoção.");
+	}
+	getchar();
 }
 
 void buscarLivro() {
@@ -116,28 +120,37 @@ void buscarLivro() {
                    livros[i].disponivel ? "Sim" : "Não");
         }
     }
-    
+    getchar();
 }
 
 void listarLivrosDisponiveis() {
-    int i; 
     for (i = 0; i < totalLivros; i++) {
         if (livros[i].disponivel) {
             printf("ID: %d, Título: %s, Autor: %s\n",
                    livros[i].id, livros[i].titulo, livros[i].autor);
         }
     }
+    getchar();
 }
 
 void listarLivrosEmprestados() {
-    int i; 
+	int encontrou=0;
     for (i = 0; i < totalLivros; i++) {
         if (!livros[i].disponivel) {
             printf("ID: %d, Título: %s, Autor: %s\n",
                    livros[i].id, livros[i].titulo, livros[i].autor);
+                   encontrou = 1;
         }
+	}
+		if(!encontrou){
+			printf("Nenhum livro Emprestado.");
+		}
+			
+		
+		getchar();
     }
-}
+    
+
 
 void registrarEmprestimo() {
     int livroID, userID;
@@ -161,6 +174,7 @@ void registrarEmprestimo() {
     livros[livroID - 1].disponivel = 0;
     salvarDados();
     printf("Empréstimo registrado!\n");
+    getchar();
 }
 
 void registrarDevolucao() {
@@ -173,7 +187,7 @@ void registrarDevolucao() {
         return;
     }
 
-    int i; 
+    
     for (i = 0; i < totalUsuarios; i++) {
         if (usuarios[i].livroEmprestado == livroID) {
             usuarios[i] = usuarios[totalUsuarios - 1];
@@ -185,6 +199,7 @@ void registrarDevolucao() {
     livros[livroID - 1].disponivel = 1;
     salvarDados();
     printf("Devolução registrada!\n");
+    getchar();
 }
 
 #include <stdio.h>
@@ -204,6 +219,7 @@ void printCentralizado(const char *texto){
 }
 
 void menu() {
+	system("cls");
 	printCentralizado("|                     BIBLIOTECA                         |\n");
     printCentralizado("|========================================================|\n");
     printCentralizado("|         1.Adicionar Livros  2.Remover Livros           |\n");
@@ -215,6 +231,7 @@ void menu() {
     printCentralizado("|                7.Registrar Devolução                   |\n");
     printCentralizado("|--------------------------------------------------------|\n");
     printCentralizado("|                       0.Sair                           |\n");
+    printCentralizado("|========================================================|\n");
 }
 
 int main() {
@@ -227,6 +244,7 @@ int main() {
         menu();
         printf("Escolha: ");
         scanf("%d", &opcao);
+        getchar();
         switch (opcao) {
             case 1: adicionarLivro(); break;
             case 2: removerLivro(); break;
