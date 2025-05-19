@@ -251,15 +251,16 @@ void printCentralizado(const char *texto){
 
 void menu() {
     system("cls");
-    printCentralizado("======== BIBLIOTECA ========");
-    printf("1. Adicionar Livro\n");
-    printf("2. Remover Livro\n");
-    printf("3. Buscar Livro\n");
-    printf("4. Listar Disponíveis\n");
-    printf("5. Listar Emprestados\n");
-    printf("6. Registrar Empréstimo\n");
-    printf("7. Registrar Devolução\n");
-    printf("0. Sair\n");
+    printCentralizado("|================== BIBLIOTECA ==================|\n");
+    printCentralizado("|  1. Adicionar Livro     2. Remover Livro       |\n");
+    printCentralizado("|------------------------------------------------|\n");
+    printCentralizado("|  3. Buscar Livro        4. Listar Disponiveis  |\n");
+    printCentralizado("|------------------------------------------------|\n");
+    printCentralizado("|  5. Listar Empréstimo   6. Registrar Devolução |\n");
+    printCentralizado("|------------------------------------------------|\n");
+    printCentralizado("|  7. Registrar Devolução 0. Sair                |\n");
+    printCentralizado("|================================================|\n");
+
 }
 
 int main() {
@@ -290,4 +291,3 @@ int main() {
 
     return 0;
 }
-
