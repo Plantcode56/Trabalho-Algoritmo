@@ -1,1 +1,398 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <locale.h>
+#include <windows.h>
+
+#define MAX_LIVROS 100
+#define MAX_USUARIOS 50
+
+typedef struct {
+    int id;
+    char titulo[100];
+    char autor[100];
+    int disponivel; // 1 disponível, 0 emprestado
+} Livro;
+
+typedef struct {
+    char nome[100];
+    char CPF[15];
+    int livroEmprestado; // 0 = nenhum
+    int senha; // senha numérica simples (pode melhorar para hash)
+} Usuario;
+
+// Arrays globais para dados
+Livro livros[MAX_LIVROS];
+Usuario usuarios[MAX_USUARIOS];
+
+int totalLivros = 0;
+int totalUsuarios = 0;
+Usuario usuarioLogado;
+
+int i; // variável global para laços
+
+// Função para centralizar texto no console
+void printCentralizado(const char* texto) {
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    int larguraTerminal;
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+    larguraTerminal = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+
+    int comprimentoTexto = (int)strlen(texto);
+    int espacos = (larguraTerminal - comprimentoTexto) / 2;
+    if (espacos < 0) espacos = 0;
+
+    for (i = 0; i < espacos; i++) printf(" ");
+    printf("%s\n", texto);
+}
+
+// Salvamento dos livros
+void salvarLivros() {
+    FILE *f = fopen("livros.dat", "wb");
+    if (!f) {
+        printf("Erro ao salvar livros!\n");
+        return;
+    }
+    fwrite(&totalLivros, sizeof(int), 1, f);
+    fwrite(livros, sizeof(Livro), totalLivros, f);
+    fclose(f);
+}
+
+// Carregamento dos livros
+void carregarLivros() {
+    FILE *f = fopen("livros.dat", "rb");
+    if (!f) return; // Se não existir, ok
+    fread(&totalLivros, sizeof(int), 1, f);
+    fread(livros, sizeof(Livro), totalLivros, f);
+    fclose(f);
+}
+
+// Salvamento dos usuários
+void salvarUsuarios() {
+    FILE *f = fopen("usuarios.dat", "wb");
+    if (!f) {
+        printf("Erro ao salvar usuarios!\n");
+        return;
+    }
+    fwrite(&totalUsuarios, sizeof(int), 1, f);
+    fwrite(usuarios, sizeof(Usuario), totalUsuarios, f);
+    fclose(f);
+}
+
+// Carregamento dos usuários
+void carregarUsuarios() {
+    FILE *f = fopen("usuarios.dat", "rb");
+    if (!f) return;
+    fread(&totalUsuarios, sizeof(int), 1, f);
+    fread(usuarios, sizeof(Usuario), totalUsuarios, f);
+    fclose(f);
+}
+
+// Cadastro de usuário
+void cadastrarUsuario() {
+    if (totalUsuarios >= MAX_USUARIOS) {
+        printf("Limite de usuarios atingido.\n");
+        return;
+    }
+    Usuario novo;
+    getchar(); // limpar buffer
+    printCentralizado("== CADASTRO DE USUARIO ==");
+    printf("Nome: ");
+    fgets(novo.nome, sizeof(novo.nome), stdin);
+    novo.nome[strcspn(novo.nome, "\n")] = '\0';
+
+    printf("CPF (somente números): ");
+    fgets(novo.CPF, sizeof(novo.CPF), stdin);
+    novo.CPF[strcspn(novo.CPF, "\n")] = '\0';
+
+    printf("Senha numérica: ");
+    scanf("%d", &novo.senha);
+
+    novo.livroEmprestado = 0;
+
+    usuarios[totalUsuarios++] = novo;
+    salvarUsuarios();
+
+    printCentralizado("Usuario cadastrado com sucesso!\n");
+    system("pause");
+}
+
+// Login de usuário
+int login() {
+    char cpf[15];
+    int senha;
+
+    getchar(); // limpar buffer
+    printCentralizado("== LOGIN ==");
+    printf("CPF: ");
+    fgets(cpf, sizeof(cpf), stdin);
+    cpf[strcspn(cpf, "\n")] = '\0';
+
+    printf("Senha: ");
+    scanf("%d", &senha);
+
+    for (i = 0; i < totalUsuarios; i++) {
+        if (strcmp(usuarios[i].CPF, cpf) == 0 && usuarios[i].senha == senha) {
+            usuarioLogado = usuarios[i];
+            printCentralizado("Login efetuado com sucesso!");
+            printf("Bem-vindo, %s!\n\n", usuarioLogado.nome);
+            system("pause");
+            return 1;
+        }
+    }
+    printCentralizado("CPF ou senha incorretos.\n");
+    system("pause");
+    return 0;
+}
+
+// Tela inicial para login ou cadastro
+void telaInicial() {
+    int opcao;
+
+    carregarUsuarios();
+    carregarLivros();
+
+    do {
+        system("cls");
+        printCentralizado("== BEM-VINDO A BIBLIOTECA ==");
+        printf("1. Login\n2. Cadastro\n0. Sair\nEscolha: ");
+        scanf("%d", &opcao);
+
+        switch(opcao) {
+            case 1:
+                if (login()) return;
+                break;
+            case 2:
+                cadastrarUsuario();
+                break;
+            case 0:
+                exit(0);
+            default:
+                printf("Opcao invalida!\n");
+                system("pause");
+        }
+    } while(1);
+}
+
+// Adicionar livro
+void adicionarLivro() {
+    if (totalLivros >= MAX_LIVROS) {
+        printCentralizado("Limite de livros atingido!");
+        system("pause");
+        return;
+    }
+
+    Livro novo;
+    novo.id = totalLivros + 1;
+    getchar(); // limpar buffer
+    printCentralizado("== ADICIONAR LIVRO ==");
+    printf("Titulo: ");
+    fgets(novo.titulo, sizeof(novo.titulo), stdin);
+    novo.titulo[strcspn(novo.titulo, "\n")] = '\0';
+
+    printf("Autor: ");
+    fgets(novo.autor, sizeof(novo.autor), stdin);
+    novo.autor[strcspn(novo.autor, "\n")] = '\0';
+
+    novo.disponivel = 1;
+
+    livros[totalLivros++] = novo;
+    salvarLivros();
+
+    printCentralizado("Livro adicionado com sucesso!");
+    system("pause");
+}
+
+// Remover livro
+void removerLivro() {
+    int id;
+    printCentralizado("== REMOVER LIVRO ==");
+    printf("Digite o ID do livro: ");
+    scanf("%d", &id);
+
+    for (i = 0; i < totalLivros; i++) {
+        if (livros[i].id == id) {
+            livros[i] = livros[totalLivros - 1]; // substitui pelo último
+            totalLivros--;
+            salvarLivros();
+            printCentralizado("Livro removido com sucesso!");
+            system("pause");
+            return;
+        }
+    }
+    printCentralizado("Livro não encontrado.");
+    system("pause");
+}
+
+// Buscar livro pelo título (busca parcial)
+void buscarLivro() {
+    char titulo[100];
+    getchar();
+    printCentralizado("== BUSCAR LIVRO ==");
+    printf("Digite parte do título: ");
+    fgets(titulo, sizeof(titulo), stdin);
+    titulo[strcspn(titulo, "\n")] = '\0';
+
+    int encontrados = 0;
+    for (i = 0; i < totalLivros; i++) {
+        if (strstr(livros[i].titulo, titulo) != NULL) {
+            printf("ID: %d | Título: %s | Autor: %s | Disponível: %s\n",
+                   livros[i].id, livros[i].titulo, livros[i].autor,
+                   livros[i].disponivel ? "Sim" : "Não");
+            encontrados++;
+        }
+    }
+    if (encontrados == 0)
+        printf("Nenhum livro encontrado com esse título.\n");
+    system("pause");
+}
+
+// Listar livros disponíveis
+void listarLivrosDisponiveis() {
+    printCentralizado("== LISTA DE LIVROS DISPONIVEIS ==");
+    int encontrados = 0;
+    for (i = 0; i < totalLivros; i++) {
+        if (livros[i].disponivel) {
+            printf("ID: %d | Título: %s | Autor: %s\n", livros[i].id, livros[i].titulo, livros[i].autor);
+            encontrados++;
+        }
+    }
+    if (encontrados == 0) printf("Nenhum livro disponível.\n");
+    system("pause");
+}
+
+// Listar livros emprestados
+void listarLivrosEmprestados() {
+    printCentralizado("== LISTA DE LIVROS EMPRESTADOS ==");
+    int encontrados = 0;
+    for (i = 0; i < totalLivros; i++) {
+        if (!livros[i].disponivel) {
+            printf("ID: %d | Título: %s | Autor: %s\n", livros[i].id, livros[i].titulo, livros[i].autor);
+            encontrados++;
+        }
+    }
+    if (encontrados == 0) printf("Nenhum livro emprestado no momento.\n");
+    system("pause");
+}
+
+// Registrar empréstimo
+void registrarEmprestimo() {
+    int id;
+
+    if (usuarioLogado.livroEmprestado != 0) {
+        printCentralizado("Você já tem um livro emprestado. Devolva antes de pegar outro.");
+        system("pause");
+        return;
+    }
+
+    printCentralizado("== REGISTRAR EMPRÉSTIMO ==");
+    listarLivrosDisponiveis();
+    printf("Digite o ID do livro para empréstimo: ");
+    scanf("%d", &id);
+
+    if (id <= 0 || id > totalLivros) {
+        printCentralizado("ID inválido.");
+        system("pause");
+        return;
+    }
+
+    if (!livros[id - 1].disponivel) {
+        printCentralizado("Livro não está disponível para empréstimo.");
+        system("pause");
+        return;
+    }
+
+    livros[id - 1].disponivel = 0;
+    // Atualiza o usuário
+    for (i = 0; i < totalUsuarios; i++) {
+        if (strcmp(usuarios[i].CPF, usuarioLogado.CPF) == 0) {
+            usuarios[i].livroEmprestado = id;
+            usuarioLogado.livroEmprestado = id;
+            break;
+        }
+    }
+    salvarLivros();
+    salvarUsuarios();
+    printCentralizado("Empréstimo registrado com sucesso!");
+    system("pause");
+}
+
+// Registrar devolução
+void registrarDevolucao() {
+    int id;
+    if (usuarioLogado.livroEmprestado == 0) {
+        printCentralizado("Você não tem livro emprestado para devolver.");
+        system("pause");
+        return;
+    }
+
+    printCentralizado("== REGISTRAR DEVOLUÇÃO ==");
+    printf("Digite o ID do livro para devolução: ");
+    scanf("%d", &id);
+
+    if (id != usuarioLogado.livroEmprestado) {
+        printCentralizado("Você só pode devolver o livro que pegou emprestado.");
+        system("pause");
+        return;
+    }
+
+    if (id <= 0 || id > totalLivros || livros[id - 1].disponivel) {
+        printCentralizado("Livro já está disponível.");
+        system("pause");
+        return;
+    }
+
+    livros[id - 1].disponivel = 1;
+
+    for (i = 0; i < totalUsuarios; i++) {
+        if (strcmp(usuarios[i].CPF, usuarioLogado.CPF) == 0) {
+            usuarios[i].livroEmprestado = 0;
+            usuarioLogado.livroEmprestado = 0;
+            break;
+        }
+    }
+    salvarLivros();
+    salvarUsuarios();
+    printCentralizado("Devolução registrada com sucesso!");
+    system("pause");
+}
+
+// Menu principal
+void menu() {
+    int opcao;
+
+    do {
+        system("cls");
+        printCentralizado("|=============== MENU PRINCIPAL ===============|");
+        printf("Usuário logado: %s\n", usuarioLogado.nome);
+        printCentralizado("| 1. Adicionar Livro       2. Remover Livro     |");
+        printCentralizado("| 3. Buscar Livro          4. Listar Disponíveis |");
+        printCentralizado("| 5. Listar Emprestados    6. Registrar Empréstimo|");
+        printCentralizado("| 7. Registrar Devolução   0. Sair             |");
+        printCentralizado("|==============================================|");
+        printf("Escolha: ");
+        scanf("%d", &opcao);
+
+        switch(opcao) {
+            case 1: adicionarLivro(); break;
+            case 2: removerLivro(); break;
+            case 3: buscarLivro(); break;
+            case 4: listarLivrosDisponiveis(); break;
+            case 5: listarLivrosEmprestados(); break;
+            case 6: registrarEmprestimo(); break;
+            case 7: registrarDevolucao(); break;
+            case 0: printCentralizado("Saindo do sistema..."); system("pause"); break;
+            default: printCentralizado("Opcao invalida!"); system("pause");
+        }
+    } while(opcao != 0);
+}
+
+// Função principal
+int main() {
+    setlocale(LC_ALL, "Portuguese");
+    telaInicial();
+    menu();
+
+    return 0;
+}
 
