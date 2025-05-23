@@ -365,7 +365,7 @@ void menu() {
         system("cls");
         printCentralizado("|================= MENU PRINCIPAL =================|");
         printCentralizado("|--------------------------------------------------|");
-        printCentralizado("Usuário logado: %s\n, usuarioLogado.nome");
+        printf("Usuário logado: %s\n", usuarioLogado.nome);
         printCentralizado("|--------------------------------------------------|");
         printCentralizado("| 1. Adicionar Livro       2. Remover Livro        |");
         printCentralizado("|--------------------------------------------------|");
