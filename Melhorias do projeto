@@ -363,13 +363,18 @@ void menu() {
 
     do {
         system("cls");
-        printCentralizado("|=============== MENU PRINCIPAL ===============|");
-        printf("Usuário logado: %s\n", usuarioLogado.nome);
-        printCentralizado("| 1. Adicionar Livro       2. Remover Livro     |");
-        printCentralizado("| 3. Buscar Livro          4. Listar Disponíveis |");
+        printCentralizado("|================= MENU PRINCIPAL =================|");
+        printCentralizado("|--------------------------------------------------|");
+        printCentralizado("Usuário logado: %s\n", usuarioLogado.nome);
+        printCentralizado("|--------------------------------------------------|");
+        printCentralizado("| 1. Adicionar Livro       2. Remover Livro        |");
+        printCentralizado("|--------------------------------------------------|");
+        printCentralizado("| 3. Buscar Livro          4. Listar Disponíveis   |");
+        printCentralizado("|--------------------------------------------------|");
         printCentralizado("| 5. Listar Emprestados    6. Registrar Empréstimo|");
-        printCentralizado("| 7. Registrar Devolução   0. Sair             |");
-        printCentralizado("|==============================================|");
+        printCentralizado("|--------------------------------------------------|");
+        printCentralizado("| 7. Registrar Devolução   0. Sair                 |");
+        printCentralizado("|==================================================|");
         printf("Escolha: ");
         scanf("%d", &opcao);
 
@@ -395,4 +400,3 @@ int main() {
 
     return 0;
 }
-
